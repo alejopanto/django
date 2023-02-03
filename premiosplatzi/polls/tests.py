@@ -2,6 +2,8 @@ import datetime
 
 from django.test import TestCase
 from django.utils import timezone
+from django.urls import reverse
+
 
 from .models import Question
 
@@ -24,3 +26,31 @@ class QuestionModelTests(TestCase):
         time = timezone.now()
         question_now = Question(question_text="Una pregunta actual", pub_date=time)
         self.assertIs(question_now.was_published_recently(), True)
+
+
+def create_question(question_text, days):
+    """Create a question"""
+    time = timezone.now() + datetime.timedelta(days=days)
+    return Question.objects.create(question_text=question_text, pub_date=time)
+
+
+class QuestionIndexViewTests(TestCase):
+    def test_no_questions(self):
+        """If no question exists, and appropiate message is displayed"""
+        response = self.client.get(reverse("polls:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No hay polls.")
+        self.assertQuerysetEqual(response.context["latest_question_list"], [])
+
+    def test_future_question(self):
+        """if the question is in the future not showing"""
+        response = self.client.get(reverse("polls:index"))
+        time = timezone.now() + datetime.timedelta(days=30)
+        future_question = Question(question_text="Una pregunta futura", pub_date=time)
+        self.assertNotIn(future_question, response.context["latest_question_list"])
+
+    def test_past_question(self):
+        """if the question is in the past show in the app"""
+        question = create_question("pregunta del pasado", days=-10)
+        respose = self.client.get(reverse("polls:index"))
+        self.assertQuerysetEqual(respose.context["latest_question_list"], [question])
