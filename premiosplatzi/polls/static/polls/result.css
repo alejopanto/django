@@ -1,0 +1,18 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    background: linear-gradient(
+        to right,
+        hsl(98 100% 62%),
+        hsl(204 100% 59%)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+}
